@@ -1,219 +1,168 @@
-# HealthConnectAI — Smart Healthcare Connector Platform
+# Smart Auth Connector
 
-A full-stack intelligent healthcare authorization workflow platform powered by **AI**, **FHIR R4 standards**, **Angular 17**, **Spring Boot 3.2**, and **MySQL 8**.
+A full-stack healthcare prior-authorization platform that connects providers and payers with an AI-powered Copilot review engine. Built with Angular 17 (frontend) and Spring Boot 3 (backend).
 
 ---
 
-## 🏗️ Architecture Overview
+## Overview
+
+Prior authorization is one of the most time-consuming workflows in healthcare. This platform streamlines the process by:
+
+- Allowing **providers** to build and submit authorization requests
+- Running an **AI Copilot review** (powered by Claude via Anthropic API) that scores readiness and flags clinical gaps before submission
+- Giving **payers** a review queue to adjudicate requests (approve / deny / request more info)
+- Generating **FHIR-compliant** claim bundles for each request
+- Sending **real-time notifications** to both sides at every status change
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Angular 17, TypeScript, RxJS |
+| Backend | Spring Boot 3.3, Java 17 |
+| Database | H2 (in-memory, zero setup) — MySQL / PostgreSQL also supported |
+| AI Copilot | Anthropic Claude API (falls back to built-in rules engine if no key) |
+| API Standard | FHIR R4 (Claim / ClaimResponse bundles) |
+
+---
+
+## Project Structure
 
 ```
-┌─────────────────────────────────┐      ┌──────────────────────────────────┐
-│   Angular 17 Frontend           │      │   Spring Boot 3.2 Backend         │
-│   (Port 4200)                   │◄────►│   (Port 8080)                     │
-│                                 │ REST │                                    │
-│  • Provider Dashboard           │ API  │  • JWT Security                   │
-│  • Payer Dashboard              │      │  • FHIR Resource Modeling         │
-│  • AI Copilot Sidebar           │      │  • AI Copilot Engine              │
-│  • Kanban Status Board          │      │  • WebSocket (Real-time Chat)     │
-│  • Bidirectional Chat           │      │  • Authorization Workflow         │
-│  • Notification Center          │      │  • Notification Engine            │
-└─────────────────────────────────┘      └──────────────────────────────────┘
-                                                          │
-                                                          ▼
-                                         ┌──────────────────────────────────┐
-                                         │        MySQL 8 Database           │
-                                         │  • users                          │
-                                         │  • authorization_requests         │
-                                         │  • communications                 │
-                                         │  • notifications                  │
-                                         └──────────────────────────────────┘
+smart-auth-connector/
+├── backend/                  # Spring Boot application
+│   ├── src/main/java/com/connector/auth/
+│   │   ├── domain/           # JPA entities
+│   │   ├── dto/              # Request/response DTOs
+│   │   ├── web/              # REST controllers
+│   │   ├── service/          # Business logic + Copilot client
+│   │   ├── repository/       # Spring Data JPA repositories
+│   │   ├── mapper/           # FHIR bundle mapper
+│   │   └── config/           # CORS configuration
+│   └── src/main/resources/
+│       ├── application.yml   # App config
+│       ├── schema.sql        # DB schema
+│       └── data.sql          # Seed data
+│
+└── frontend/                 # Angular application
+    └── src/app/
+        ├── components/
+        │   ├── provider/     # Authorization request builder + Copilot review
+        │   ├── payer/        # Review queue + adjudication
+        │   ├── tracking/     # Request tracking across both sides
+        │   └── fhir-viewer/  # FHIR bundle viewer
+        ├── services/         # API service (HTTP client)
+        └── models/           # TypeScript interfaces
 ```
 
 ---
 
-## ✨ Features
-
-### 🏥 Provider Module
-- **Dashboard** with KPI metrics (drafts, awaiting response, AI rate, action needed)
-- **New Request form** with real-time AI Copilot validation
-- **Active Cases** worklist with search, filter, sort
-- **Case Detail** with FHIR resource inspector and timeline
-
-### 🏢 Payer Module
-- **Review Dashboard** with auto-adjudication stats
-- **Split-screen Review Queue** (list + detail viewer)
-- **Quick Approve/Reject/Clarify** actions
-- **FHIR Resource Inspector** for clean field views
-
-### 🤖 AI Copilot Engine
-- Real-time scan as provider fills the form
-- Validates: NPI, ICD-10 codes, clinical notes, CPT codes, demographics
-- Risk scoring (0–100%) with GREEN/YELLOW/RED levels
-- Auto-fix suggestions — attaches missing clinical documents
-- Prevents rejection before submission
-
-### 📊 Status Tracking (Kanban)
-- Visual board with 5 FHIR-mapped columns:
-  `Draft → Transmitted → Payer Review → Info Requested → Finalized`
-- Color-coded cards with AI scores and urgency
-- Expiry date warnings
-
-### 💬 Bidirectional Communication
-- In-case chat window (FHIR Communication resource)
-- WebSocket support for real-time messaging
-- No submission closure required — inline clarification
-
-### 🔔 Notification Center
-- Critical 🚨 / Warning 🟡 / Success ✅ / AI Insight ✨ alerts
-- Unread badge count
-- Mark all read
-
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
+
 - Java 17+
-- Node.js 18+ & npm
-- MySQL 8.0+
-- Maven 3.8+
+- Node.js 22+ and npm
+- Maven (or use the included `mvnw` wrapper)
 
-### 1. Database Setup
-```sql
-CREATE DATABASE healthcare_connector;
--- Tables auto-created by JPA (ddl-auto=update)
--- Demo data seeded on first startup
-```
+---
 
-### 2. Backend Setup
+### 1. Run the Backend
+
 ```bash
 cd backend
-
-# Configure DB credentials in:
-# src/main/resources/application.properties
-# spring.datasource.url=jdbc:mysql://localhost:3306/healthcare_connector
-# spring.datasource.username=root
-# spring.datasource.password=your_password
-
-mvn clean install
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
-Backend runs at: http://localhost:8080
-Swagger UI: http://localhost:8080/swagger-ui.html
 
-### 3. Frontend Setup
+The API starts on **http://localhost:8081**
+
+- H2 Console (inspect DB): http://localhost:8081/h2-console
+  - JDBC URL: `jdbc:h2:mem:authdb`
+  - Username: `sa` | Password: *(leave blank)*
+
+---
+
+### 2. Run the Frontend
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
-Frontend runs at: http://localhost:4200
+
+The app opens at **http://localhost:4200**
 
 ---
 
-## 🔑 Demo Credentials
+### 3. Enable AI Copilot (Optional)
 
-| Role     | Username  | Password     | Portal                      |
-|----------|-----------|--------------|------------------------------|
-| Provider | provider1 | password123  | http://localhost:4200/login  |
-| Provider | provider2 | password123  | http://localhost:4200/login  |
-| Payer    | payer1    | password123  | http://localhost:4200/login  |
-| Admin    | admin     | admin123     | http://localhost:4200/login  |
+By default the platform uses the built-in clinical rules engine. To enable live AI reviews via Claude:
+
+```powershell
+# Windows PowerShell
+$env:ANTHROPIC_API_KEY = "sk-ant-your-key-here"
+
+# Then restart the backend
+./mvnw spring-boot:run
+```
+
+Get an API key at https://console.anthropic.com
 
 ---
 
-## 📡 API Endpoints
+## Features
 
-### Auth
-| Method | URL | Description |
-|--------|-----|-------------|
-| POST | /api/auth/login | Login and get JWT |
-| POST | /api/auth/register | Register new user |
+### Provider Portal (`/provider`)
+- Build authorization requests with patient, coverage, provider, diagnosis (ICD-10), and service line (CPT) details
+- Run AI Copilot pre-review to get a readiness score and fix clinical gaps before submitting
+- Resubmit requests when a payer asks for additional information
 
-### Authorization Requests
-| Method | URL | Description |
-|--------|-----|-------------|
-| POST | /api/authorization/create | Create draft request |
-| POST | /api/authorization/analyze | AI analysis (no save) |
-| POST | /api/authorization/{caseId}/submit | Submit to payer |
-| POST | /api/authorization/{caseId}/ai-fix | Apply AI recommended fixes |
-| POST | /api/authorization/{caseId}/review | Payer approve/reject |
-| POST | /api/authorization/{caseId}/clarification | Request clarification |
-| GET | /api/authorization/provider/dashboard | Provider KPIs |
-| GET | /api/authorization/payer/dashboard | Payer KPIs |
-| GET | /api/authorization/provider/cases | All provider cases |
-| GET | /api/authorization/payer/cases | All cases for payer |
-| GET | /api/authorization/kanban | Kanban board data |
-| GET | /api/authorization/{caseId} | Single case detail |
+### Payer Portal (`/payer`)
+- Review queue showing all pending authorization requests with AI readiness scores
+- Full clinical detail view including Copilot assessment
+- One-click Approve / Deny / Request Info with rationale and auth number
 
-### Communication
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | /api/communication/{caseId}/messages | Get chat messages |
-| POST | /api/communication/send | Send message |
+### Tracking (`/tracking`)
+- Full audit trail of every request and status change visible to both sides
 
 ### Notifications
-| Method | URL | Description |
-|--------|-----|-------------|
-| GET | /api/notifications | Get user notifications |
-| GET | /api/notifications/unread-count | Get unread count |
-| POST | /api/notifications/mark-all-read | Mark all as read |
-| POST | /api/notifications/{id}/read | Mark one as read |
+- Real-time notification panel for both provider and payer roles
+- Color-coded alerts (success / warning / danger / info)
 
 ---
 
-## 🎨 Tech Stack
+## API Endpoints
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Angular 17 (Standalone Components) |
-| Styling | Custom SCSS Design System (Dark Healthcare Theme) |
-| Backend | Spring Boot 3.2, Java 17 |
-| Security | JWT (JJWT 0.11), Spring Security |
-| Real-time | WebSocket / STOMP |
-| Database | MySQL 8 + Spring Data JPA |
-| AI Engine | Custom rule-based clinical validator |
-| Standards | HL7 FHIR R4 (Claim, ClaimResponse, Communication, Coverage) |
-| API Docs | SpringDoc OpenAPI 3 / Swagger UI |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/provider/copilot/review` | Run AI pre-review on a draft request |
+| POST | `/api/provider/requests` | Submit a new authorization request |
+| POST | `/api/provider/requests/{id}/resubmit` | Resubmit with additional documentation |
+| GET | `/api/payer/queue` | Get all pending requests |
+| POST | `/api/payer/requests/{id}/decision` | Record approve / deny / info decision |
+| GET | `/api/requests` | Get all requests (tracking) |
+| GET | `/api/requests/{id}/fhir` | Get FHIR R4 bundle for a request |
+| GET | `/api/notifications` | Get notifications for a recipient |
 
 ---
 
-## 📁 Project Structure
+## Database
 
-```
-healthcare-connector/
-├── backend/
-│   ├── src/main/java/com/healthcare/connector/
-│   │   ├── ai/               # AI Copilot Engine
-│   │   ├── config/           # Security, WebSocket, Data Initializer
-│   │   ├── controller/       # REST Controllers
-│   │   ├── dto/              # Data Transfer Objects
-│   │   ├── model/            # JPA Entities + Enums
-│   │   ├── repository/       # Spring Data JPA Repositories
-│   │   ├── security/         # JWT Filter + Utils
-│   │   └── service/          # Business Logic Services
-│   └── src/main/resources/
-│       └── application.properties
-├── frontend/
-│   └── src/app/
-│       ├── components/
-│       │   ├── auth/           # Login, Register
-│       │   ├── provider-dashboard/  # Provider screens
-│       │   ├── payer-dashboard/     # Payer screens
-│       │   ├── new-request/    # Request form + AI Copilot
-│       │   ├── case-detail/    # Case + Chat + Timeline
-│       │   ├── status-tracking/ # Kanban Board
-│       │   └── shared/         # Layout, Notifications
-│       ├── guards/             # Auth guard
-│       ├── interceptors/       # JWT interceptor
-│       ├── models/             # TypeScript interfaces
-│       └── services/           # HTTP services
-└── docs/
-    ├── schema.sql
-    └── README.md
-```
+The app ships with H2 in-memory database — no setup needed. Data resets on each restart.
 
-Video of the Project
+To switch to a persistent database, edit `backend/src/main/resources/application.yml` and uncomment the MySQL or PostgreSQL block.
 
-https://github.com/user-attachments/assets/7e63fc29-81b4-41bb-a820-92ed9dfc4433
+---
 
+## Configuration
+
+Key settings in `backend/src/main/resources/application.yml`:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `server.port` | `8081` | Backend port |
+| `copilot.model` | `claude-sonnet-4-20250514` | Claude model used for reviews |
+| `copilot.api-key` | *(empty)* | Set `ANTHROPIC_API_KEY` env var to enable |
+| `cors.allowed-origins` | `http://localhost:4200` | Frontend origin allowed by CORS |
