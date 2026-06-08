@@ -1,5 +1,12 @@
 # AuthBridge
 
+## 🎥 Demo video
+
+https://github.com/jnikshep13/Feuji_java_full_stack_project/raw/master/Harsha%20Vardhini%20Agatamudi/authbridge/AuthBridgeDemo.mp4
+
+> If the player above does not load, click **[AuthBridgeDemo.mp4](./AuthBridgeDemo.mp4)** in this folder — GitHub plays it inline.
+
+
 **AI-powered prior authorization platform connecting healthcare providers and payers.**
 
 AuthBridge streamlines prior-authorization and claims-related communication between hospitals (providers) and insurers (payers). An AI copilot reviews every request *before* it's submitted — flagging missing data, format errors, and policy gaps and predicting approval likelihood — while a workflow engine tracks each request from draft to decision with a full audit trail and real-time notifications.
