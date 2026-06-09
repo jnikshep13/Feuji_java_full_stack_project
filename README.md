@@ -434,6 +434,8 @@ Recommendations
 
 > Record a walkthrough and link it here.
 
+https://github.com/jnikshep13/Feuji_java_full_stack_project/blob/saipranay-submission/screenshots/Feuji_Assignment_Project_Health_Connect_AI_Demo.mp4
+
 Suggested flow:
 1. Login as Provider → create a request → watch AI Copilot score animate
 2. Submit → switch to Payer → see it in the queue
