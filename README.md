@@ -17,6 +17,59 @@ HealthConnectAI is a production-grade healthcare authorization platform that str
 
 ---
 
+# 🏗️ Solution Architecture
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│                     HealthConnectAI Platform                 │
+└──────────────────────────────────────────────────────────────┘
+
+                    ┌──────────────────────┐
+                    │      Angular 17      │
+                    │      Frontend        │
+                    └──────────┬───────────┘
+                               │ REST API
+                               ▼
+┌──────────────────────────────────────────────────────────────┐
+│                  Spring Boot 3.3 Backend                    │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Authentication Layer                                        │
+│  • JWT Security                                              │
+│  • Role-Based Access (Provider / Payer)                     │
+│                                                              │
+│  Workflow Engine                                             │
+│  • Request Lifecycle                                         │
+│  • Status Management                                         │
+│  • Audit Tracking                                            │
+│                                                              │
+│  AI Copilot Engine                                           │
+│  • Completeness Scoring                                      │
+│  • Approval Probability                                      │
+│  • Risk Analysis                                             │
+│  • Recommendations                                           │
+│                                                              │
+│  Notification Engine                                         │
+│  • Approval Alerts                                           │
+│  • Denial Alerts                                             │
+│  • Information Requests                                      │
+│                                                              │
+└──────────────────────────┬───────────────────────────────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │     Database      │
+                 │  H2 / MySQL       │
+                 ├───────────────────┤
+                 │ Users             │
+                 │ Requests          │
+                 │ Notifications     │
+                 │ Audit Logs        │
+                 └───────────────────┘
+---
+
+
+
 ## Problem Statement
 
 Prior authorization in healthcare is a time-intensive, error-prone process. Providers submit incomplete requests; payers lack tooling to triage efficiently; and patients experience delays. HealthConnectAI solves this with:
@@ -29,6 +82,41 @@ Prior authorization in healthcare is a time-intensive, error-prone process. Prov
 ---
 
 ## Features
+
+# 🎯 Requirement Coverage
+
+| Assignment Requirement | Implementation |
+|-----------------------|----------------|
+| Provider Module | Provider Dashboard, Request Creation, Request Tracking |
+| Payer Module | Review Queue, Review Workspace, Decision Engine |
+| AI Copilot | Completeness Score, Approval Probability, Recommendations |
+| Status Tracking | 7-State Workflow Engine, Kanban Board |
+| Notifications | Approval, Denial, Info Request Alerts |
+| Workflow Transparency | Audit Timeline, Status History |
+| Healthcare Alignment | FHIR-inspired Authorization Workflow |
+
+
+# 🔄 Workflow Lifecycle
+
+```text
+DRAFT
+  │
+  ▼
+SUBMITTED
+  │
+  ▼
+IN_REVIEW
+  ├────────────► APPROVED
+  │
+  ├────────────► DENIED
+  │
+  ▼
+INFO_REQUESTED
+  │
+  ▼
+RESUBMITTED
+  │
+  └────────────► IN_REVIEW
 
 ### Authentication
 - JWT-based login with role detection (Provider / Payer)
@@ -277,6 +365,51 @@ healthconnectai/
 ```
 
 ---
+
+# 🚀 End-to-End User Journey
+
+## Provider Journey
+
+```text
+Login
+  ↓
+Create Authorization Request
+  ↓
+AI Copilot Validation
+  ↓
+Submit Request
+  ↓
+Track Status
+  ↓
+Receive Decision
+
+## Payer Journey
+
+Login
+  ↓
+Review Queue
+  ↓
+Analyze Request
+  ↓
+Approve / Deny / Request Information
+  ↓
+Provider Notification
+
+## AI Analysis
+
+Clinical Notes
+Diagnosis
+Procedure
+Supporting Documents
+          │
+          ▼
+      AI Engine
+          │
+          ▼
+Completeness Score
+Approval Probability
+Risk Assessment
+Recommendations
 
 ## Screenshots
 
