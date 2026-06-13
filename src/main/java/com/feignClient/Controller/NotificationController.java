@@ -31,7 +31,6 @@ public class NotificationController {
 
         return repository.findByProviderId(providerId);
     }
-    //new chnages
     @GetMapping("/all")
     public List<Notification> getAllNotification() {
         return service.getAllNotifications();
