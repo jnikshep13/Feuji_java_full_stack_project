@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createAuthorization, getNotificationCount } from "../AuthIntegration";
+import { createAuthorization, getNotificationCount, uploadDocument } from "../AuthIntegration";
 
 export default function SubmitPage({ onLogout }) {
   const navigate = useNavigate();
@@ -9,6 +9,11 @@ export default function SubmitPage({ onLogout }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [documentId, setDocumentId] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [documentStatus, setDocumentStatus] = useState("");
+  const [documentError, setDocumentError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -56,6 +61,32 @@ export default function SubmitPage({ onLogout }) {
       setErrorMessage("Submission failed. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleUploadDocument = async (e) => {
+    e.preventDefault();
+
+    if (!documentId.trim() || !selectedFile) {
+      setDocumentError("Please enter a request ID and choose a file.");
+      return;
+    }
+
+    setIsUploading(true);
+    setDocumentStatus("");
+    setDocumentError("");
+
+    try {
+      await uploadDocument(documentId, selectedFile);
+      setDocumentStatus(`Document uploaded for request ${documentId}.`);
+      setDocumentId("");
+      setSelectedFile(null);
+      e.target.reset();
+    } catch (error) {
+      console.error(error);
+      setDocumentError("Document upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -157,6 +188,44 @@ export default function SubmitPage({ onLogout }) {
 
         <button type="submit" className="submit-btn" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit Request"}
+        </button>
+      </form>
+
+      <form className="document-section" onSubmit={handleUploadDocument}>
+        <h2>Upload supporting document</h2>
+        <p>Use the request ID from the authorization and upload the file for payer access.</p>
+
+        <div className="form-group">
+          <label htmlFor="documentId">Request ID</label>
+          <input
+            id="documentId"
+            name="documentId"
+            type="number"
+            value={documentId}
+            onChange={(e) => setDocumentId(e.target.value)}
+            className="form-input"
+            placeholder="Enter the request ID"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="documentFile">Choose document</label>
+          <input
+            id="documentFile"
+            name="documentFile"
+            type="file"
+            className="form-input document-input"
+            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            required
+          />
+        </div>
+
+        {documentStatus && <div className="message success">{documentStatus}</div>}
+        {documentError && <div className="message error">{documentError}</div>}
+
+        <button type="submit" className="submit-btn" disabled={isUploading}>
+          {isUploading ? "Uploading..." : "Upload Document"}
         </button>
       </form>
     </div>

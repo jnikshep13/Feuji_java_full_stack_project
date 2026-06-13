@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export const createAuthorization = (data) => {
     return axios.post(`${BASE_URL}/api/auth/create`, data);
@@ -15,7 +15,21 @@ export const approveAuthorization = (id) => {
 };
 
 export const rejectAuthorization = (id, comment) => {
-    return axios.put(`${BASE_URL}/api/payer/reject/${id}`, { comment });
+    const url = `${BASE_URL}/api/payer/reject/${id}`;
+
+    return axios.put(url, { comment }, { headers: { Accept: "application/json" } })
+        .catch((error) => {
+            if (error.response?.status >= 400) {
+                return axios.put(url, comment, {
+                    headers: {
+                        "Content-Type": "text/plain",
+                        Accept: "application/json"
+                    }
+                });
+            }
+
+            throw error;
+        });
 };
 
 export const getDashboard = () => {
@@ -34,10 +48,17 @@ export const getNotificationCount = () => {
     return axios.get(`${BASE_URL}/api/notification/count`);
 };
 
-export const getAllNotifications = () => {
-    return axios.get(`${BASE_URL}/api/notification/all`);
+export const uploadDocument = (id, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post(`${BASE_URL}/documents/upload/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    });
 };
 
-export const getNotificationCount = () => {
-    return axios.get(`${BASE_URL}/api/notification/count`);
+export const downloadDocument = (id) => {
+    return axios.get(`${BASE_URL}/documents/authorization/${id}`, {
+        responseType: "arraybuffer",
+    });
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllAuthorizations, approveAuthorization, rejectAuthorization } from "../AuthIntegration";
+import { getAllAuthorizations, approveAuthorization, rejectAuthorization, downloadDocument } from "../AuthIntegration";
 
 export default function RequestsPage({ onLogout }) {
   const [requests, setRequests] = useState([]);
@@ -68,6 +68,26 @@ export default function RequestsPage({ onLogout }) {
     }
   };
 
+  const handleDownloadDocument = async (id) => {
+    try {
+      const response = await downloadDocument(id);
+      const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `document-${id}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setStatusMessage("Document downloaded.");
+      setErrorMessage("");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Unable to download document.");
+    }
+  };
+
   const navigate = useNavigate();
 
   return (
@@ -75,7 +95,7 @@ export default function RequestsPage({ onLogout }) {
       <div className="top-bar">
         <div>
           <h1>Payer Requests</h1>
-          <p>Review pending authorization requests and take action.</p>
+          <p>Review pending authorization requests, download documents, and take action.</p>
         </div>
         <div className="top-bar-actions">
           <button className="action-btn secondary-btn" type="button" onClick={() => navigate("/dashboard")}>Dashboard</button>
@@ -153,6 +173,13 @@ export default function RequestsPage({ onLogout }) {
                         onClick={() => openRejectForm(item)}
                       >
                         Reject
+                      </button>
+                      <button
+                        type="button"
+                        className="action-btn download-btn"
+                        onClick={() => handleDownloadDocument(item.id)}
+                      >
+                        Download
                       </button>
                     </td>
                   </tr>

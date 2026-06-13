@@ -328,6 +328,36 @@ body {
   margin-top: 12px;
 }
 
+.document-section {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.document-section h2 {
+  color: #1e3a8a;
+  margin-bottom: 8px;
+}
+
+.document-section p {
+  color: #4b5563;
+  margin-bottom: 14px;
+}
+
+.document-input {
+  padding: 10px;
+}
+
+.download-btn {
+  background: #0f766e;
+}
+
+.download-btn:hover {
+  background: #115e59;
+}
+
 .cancel-btn {
   background: #6b7280;
 }
